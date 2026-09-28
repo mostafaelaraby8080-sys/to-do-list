@@ -3,7 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>To-Do List</title>
+  <meta name="description" content="قائمة مهام يومية أنيقة تُحفظ تلقائيًا على جهازك.">
+  <meta name="theme-color" content="#0b1020">
+  <title>قائمة المهام</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,62 +18,98 @@
     <span class="blob blob--one"></span>
     <span class="blob blob--two"></span>
     <span class="blob blob--three"></span>
+    <span class="grain"></span>
   </div>
 
   <main class="app">
     <header class="app__header">
-      <h1 class="app__title">To-Do List</h1>
-      <p class="app__subtitle" id="dateLine"></p>
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="22" height="22">
+            <rect x="4" y="4" width="24" height="24" rx="7" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M10 16.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <div>
+          <h1 class="app__title">قائمة المهام</h1>
+          <p class="app__subtitle" id="dateLine"></p>
+        </div>
+      </div>
     </header>
 
-    <section class="card">
+    <section class="card" aria-labelledby="taskHeading">
+      <h2 id="taskHeading" class="sr-only">إدارة المهام</h2>
 
       <form class="add-form" id="addForm" autocomplete="off">
+        <label class="sr-only" for="taskInput">مهمة جديدة</label>
         <input
           type="text"
           id="taskInput"
           class="add-form__input"
-          placeholder="أضف مهمة جديدة..."
+          placeholder="ما الذي تحتاج إنجازه اليوم؟"
           maxlength="120"
           required
         >
-        <button type="submit" class="add-form__btn" aria-label="إضافة مهمة">
-          <svg viewBox="0 0 24 24" width="22" height="22">
+        <button type="submit" class="add-form__btn">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
             <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
           </svg>
+          <span>إضافة</span>
         </button>
       </form>
 
+      <div class="metrics" id="metrics" aria-live="polite">
+        <div class="metric">
+          <span class="metric__value" id="metricTotal">0</span>
+          <span class="metric__label">الكل</span>
+        </div>
+        <div class="metric">
+          <span class="metric__value" id="metricActive">0</span>
+          <span class="metric__label">متبقية</span>
+        </div>
+        <div class="metric">
+          <span class="metric__value" id="metricDone">0</span>
+          <span class="metric__label">مكتملة</span>
+        </div>
+      </div>
+
       <div class="stats" id="stats">
-        <div class="stats__progress-track">
+        <div class="stats__progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressBar">
           <div class="stats__progress-fill" id="progressFill"></div>
         </div>
         <div class="stats__row">
-          <span id="statsText">لا توجد مهام بعد</span>
+          <span id="statsText">ابدأ بإضافة أول مهمة</span>
           <button class="clear-btn" id="clearBtn" type="button">مسح المكتملة</button>
         </div>
       </div>
 
-      <div class="filters" id="filters">
-        <button class="filter-btn is-active" data-filter="all" type="button">الكل</button>
-        <button class="filter-btn" data-filter="active" type="button">قيد التنفيذ</button>
-        <button class="filter-btn" data-filter="completed" type="button">مكتملة</button>
+      <div class="filters" id="filters" role="tablist" aria-label="تصفية المهام">
+        <button class="filter-btn is-active" data-filter="all" type="button" role="tab" aria-selected="true">
+          الكل <span class="filter-btn__count" data-count="all">0</span>
+        </button>
+        <button class="filter-btn" data-filter="active" type="button" role="tab" aria-selected="false">
+          قيد التنفيذ <span class="filter-btn__count" data-count="active">0</span>
+        </button>
+        <button class="filter-btn" data-filter="completed" type="button" role="tab" aria-selected="false">
+          مكتملة <span class="filter-btn__count" data-count="completed">0</span>
+        </button>
       </div>
 
       <ul class="task-list" id="taskList"></ul>
 
-      <div class="empty-state" id="emptyState">
-        <svg viewBox="0 0 24 24" width="46" height="46">
-          <path d="M9 11l3 3L22 4M22 12v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2h10"
-            stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        </svg>
-        <p>يومك خالٍ من المهام. أضف أول مهمة لتبدأ!</p>
+      <div class="empty-state" id="emptyState" hidden>
+        <div class="empty-state__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="36" height="36">
+            <path d="M9 11l3 3L22 4M22 12v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2h10"
+              stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </div>
+        <p id="emptyText">لا توجد مهام بعد. أضف أول مهمة لتبدأ يومك.</p>
       </div>
-
     </section>
 
     <footer class="app__footer">
-      <p>تُحفظ مهامك تلقائيًا على جهازك</p>
+      <p>اسحب المهام لإعادة ترتيبها · تُحفظ تلقائيًا على هذا الجهاز</p>
     </footer>
   </main>
 
